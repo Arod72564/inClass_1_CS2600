@@ -6,21 +6,30 @@ This program will allow a user to play a guessing game. It will
 prompt the user with a menu to play the game, change the range
 of values, or exit the program. */
 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
 char playGame(long maxNum, int randNum);
-char changeMaxNum(long *maxNumber);
+char changeMaxNum(long *maxNumber, FILE *file);
 
 int main() {
     int userChoice;
     time_t t;
     int randNum;
-    long maxNum = 10;
+    long maxNum;
     char again;
     char validate;
+    FILE *file;
     long *ptr = &maxNum;
+
+    if(file = fopen("max_number.txt", "r")){
+        fscanf(file, "%ld", &maxNum);
+        fclose(file);
+    } else {
+        maxNum = 10;
+    }
 
     do{
         // Display menu options 1-3 & prompt user for option
@@ -40,7 +49,7 @@ int main() {
 
         } else if (userChoice == 2){    // If user selects option 2
 
-            again = changeMaxNum(ptr);
+            again = changeMaxNum(ptr, file);
 
         } else if (userChoice == 3) {    // If user selects option 3
             // Display exit prompt and quit program
@@ -105,12 +114,17 @@ the user to enter a value between 1 and the max value of the random number gener
 Arguments: long* maxNumber
 Returns: char 'y'
 */
-char changeMaxNum(long *maxNumber){
+char changeMaxNum(long *maxNumber, FILE *file){
     char validate;
     char loop = 'n';
     long maxNum = *maxNumber;
 
     do {
+        if(file = fopen("max_number.txt", "r")){
+            fscanf(file, "%ld", &maxNum);
+            fclose(file);
+        }
+
         // Prompt user to enter a number greater than 0 and less than max
         printf("\nPlease enter a new maximum value bewtween 1 - %d: ", RAND_MAX);
         validate = scanf("%ld", &maxNum) ? 'Y' : 'N';
@@ -125,6 +139,14 @@ char changeMaxNum(long *maxNumber){
             printf("\nPlease choose a max number less than %d!\n", RAND_MAX);
             loop = 'y';
         } else { // If user inputs valid interger
+            file = fopen("max_number.txt", "w+");
+            if(file == NULL){   // check to see if file was made
+                printf("\nError, could not save max value to file.\n");
+            } else {        // if file sucessfully made write new max to file
+                fprintf(file, "%ld\n", maxNum);
+            }
+
+            fclose(file);
             printf("New maximum value is now %ld\n", maxNum);
             *maxNumber = maxNum;
             return 'y';
